@@ -104,11 +104,6 @@ int main(int argc, char **argv) {
 		
 		// Convert frame to RGB and write to framebuffer
 		while((img = vpx_codec_get_frame(&codec, &iter))) {
-			if(isKeyPressed(KEY_NSPIRE_RIGHT) {
-				img = vpx_codec_get_frame(&codec, &iter); //read new image
-			}
-			if(!img)
-			   break; //quit if it's impossible
 			unsigned int x, y;
 			unsigned int width = img->d_w;
 			unsigned int height = img->d_h;

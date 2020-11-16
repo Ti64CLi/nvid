@@ -27,6 +27,7 @@ FILE			*infile;
 #define IVF_FRAME_HDR_SZ (12)
   
 static void die(char *text) {
+	lcd_init(SCR_TYPE_INVALID);
 	show_msgbox("Error", text);
 	fclose(infile);
 	exit(EXIT_FAILURE);
@@ -37,6 +38,7 @@ static uint8_t clamp(int x){
 }
  
 static void die_codec(vpx_codec_ctx_t *ctx, char *s) {
+	lcd_init(SCR_TYPE_INVALID);
 	const char *detail = vpx_codec_error_detail(ctx);
 	char *err = malloc(100*sizeof(char));
 	
@@ -68,10 +70,15 @@ int main(int argc, char **argv) {
 		return EXIT_FAILURE;
 	}
 	
+	// Initialize screen
+	lcd_init(SCR_320x240_565);
+	
 	// Cached values for speed
 	uint8_t color_mode = has_colors;
-	int screen_size = SCREEN_BYTES_SIZE;
-	uint8_t *frame_buffer = SCREEN_BASE_ADDRESS;
+	int screen_size = 240 * 320 * 2;
+	uint8_t *frame_buffer = NULL;
+	if(!(frame_buffer = malloc(screen_size)))
+		die("Couldn't allocate screen buffer!");
  
 	// Ensure file is IVF
 	if(!(fread(file_hdr, 1, IVF_FILE_HDR_SZ, infile) == IVF_FILE_HDR_SZ
@@ -141,6 +148,7 @@ int main(int argc, char **argv) {
 			}
 			
 			memcpy(frame_buffer, output_frame_data, screen_size);
+			lcd_blit(frame_buffer, SCR_320x240_565);
 			if(isKeyPressed(KEY_NSPIRE_ESC)){
 				vpx_codec_destroy(&codec);
 				return 0;
@@ -151,6 +159,7 @@ int main(int argc, char **argv) {
 	if(vpx_codec_destroy(&codec))
 		die_codec(&codec, "Failed to destroy codec");
 
+	lcd_init(SCR_TYPE_INVALID);
 	fclose(infile);
 	return EXIT_SUCCESS;
 }
